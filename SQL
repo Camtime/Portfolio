@@ -1,0 +1,89 @@
+-- Lab 1 BUS440
+
+use world;
+
+-- 1. What are the countries in the world with the longest life expectancies? 
+select name, region, continent, lifeexpectancy
+from country
+order by lifeexpectancy desc;
+-- Andorra, Macao, San Marino;
+
+-- 2. What cities in the world have the largest populations?;
+select city.name AS 'city name', country.name as 'country name', region, continent, lifeexpectancy, city.population
+from country, city
+where country.Code = city.countrycode
+order by city.population DESC;
+
+-- city.population uses the population from the city table
+-- alias
+-- the where statement always put a condition on the data extraction at the row label
+
+-- 3. What are the largest countries in land mass (surface area)?;
+Select name, region, continent, surfaceArea
+From country
+Order by surfaceArea Desc;
+
+-- 4. Which English-speaking countries in the world have the highest GNP?;
+SELECT name AS 'country name', region, continent, language, GNP
+FROM country, countrylanguage
+WHERE country.Code = countrylanguage.CountryCode
+AND Language = 'English'
+ORDER BY GNP Desc;
+
+
+-- 5. What city has the smallest population?;
+SELECT city.name as 'City Name', city.population
+From city
+Order by population;
+-- Adamstown;
+
+-- 6. What continent is the most populated?;
+SELECT continent, population
+From country
+Order by population desc;
+-- Asia;
+
+
+-- 7. Which countries speak Dutch?;
+SELECT country.name as "Country Name", countrylanguage.Language
+From country, countrylanguage
+WHERE country.Code = countrylanguage.CountryCode
+AND Language = 'Dutch';
+-- Aruba, Netherlands Antilles, Beligium, Canada, Netherlands;
+
+
+-- 8. Which country has the lowest life expectancy?;
+SELECT country.name as "Country Name", LifeExpectancy
+From country
+Order by lifeexpectancy;
+-- Antarctica, French Southern territories, Bouvet Island, Cocos (Keeling) Islands, Christmas Island, Falkland Islands, British Indian Ocean Territory, Norfolk Island, Niue, Pitcairn, South Georgia and the South San.., Svalbard and Jan Mayen, Tokelau, United States Minor Outlying Island, Holy See (Vatican City State) are all tied with a null or 0 life expectancy;
+
+-- 9. What country codes starts with an A?;
+SELECT country.code
+From country
+Where country.code like 'A%';
+-- ABW, AFG, AGO, AIA, ALB, AND, ANT, ARE, ARG, ARM, ASM, ATA, ATF, ATG, AUS, AUT, AZE;
+
+-- 10. What countries have official languages?
+SELECT country.name as "Country Name", IsOfficial
+from country, countrylanguage
+where IsOfficial = "T";
+-- Zimbabwe, Zambia, South Africa ....;
+
+-- ends with n
+Select count(city.name)
+From city
+Where city.name like '%n';
+
+-- ends with n
+Select count(city.name)
+From city
+Where city.name regexp 'n$';
+
+
+
+
+
+
+
+
