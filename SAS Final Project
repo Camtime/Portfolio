@@ -1,0 +1,72 @@
+*******;
+*Final Project;
+*Cameron Houpe;
+*04/28/24;
+*******;
+
+*Here I am referencing the permanent library cshoupe.;
+LIBNAME cshoupe '/home/u63737625/SAS ICAs';
+
+*Here I am creating a filename for the file I am about to import through an URL.;
+FILENAME housing URL 'https://www4.stat.ncsu.edu/~online/ST307/Data/cshoupe_house.csv';
+
+*Here I am importing the CSV file with the outputted name of cshoupe.housing. Then I am replacing the old data with new data suing the replace option, telling SAS to use the max rows to determine variable length, and telling SAS to get the column names using the first row.;
+PROC IMPORT DATAFILE=housing
+	DBMS=CSV
+	OUT=cshoupe.housing
+	replace;
+	GUESSINGROWS = MAX;
+	GETNAMES=YES;
+Run;
+
+*Here I am creating a temporary dataset called myhouse.;
+*I am also dropping the variables BedroomAbvGr and LotShape, only keeping the responses of "Unf" and "RFn" for the variable GarageFinish, only keeping the observations the have a WoodDeckSF higher than 0, and creating a new variable called adjustedSalesPrice.;
+data myhouse;
+    set cshoupe.housing (drop = BedroomAbvGr LotShape);
+    	IF (GarageFinish = "Unf") OR (GarageFinish = "RFn");
+    	IF (WoodDeckSF > 0);
+    	adjustedSalesPrice = SalePrice/100000;
+Run;
+    	
+*Here I am creating a scatter plot with the independent variable being FirstFlrSF and the dependent variable being SalePrice, while grouping by LandContour.;
+PROC SGPLOT DATA= myhouse;
+	Reg X = FirstFlrSF Y = SalePrice/ GROUP = LandContour;
+Run;
+*The first trend I notice is that SalePrice and FirstFlrSF have a positive correlation.;
+
+*Here I am creating a multiple linear regression with the response variable being SalePrice, while FirstFlrSF and OverallQual being the predictors.;	
+PROC GLM DATA= myhouse PLOTS=all;
+	MODEL SalePrice = FirstFlrSF OverallQual/CLPARM CLM;
+Run;
+*The fitted regression line shows that there is a linear association.;
+*The 95% confidence interval is between 50.68446 and 75.80844.;
+
+*****************************************************;
+
+*I found this dataset from this URL https://www.kaggle.com/code/electrichands/spotify-similarity-based/input;
+*A question I have for the dataset is: Does energy and tempo play a part in a song's popularity?;
+
+*Here I am referencing the library cshoupe;
+LIBNAME cshoupe '/home/u63737625/SAS ICAs';
+
+*Here I am creating a filename for the file I am trying to import using the file location.;
+Filename spotify '/home/u63737625/SAS ICAs/dataset.csv';
+
+*Here I am importing the file I named "spotify" by including the database management system, the name of the libary in the filename, a command to replace data, the maximum amount of rows for SAS to use to determine the necessary length of a variable, and a command to tell SAS the header names are in the first row.;
+PROC IMPORT DATAFILE= spotify
+	DBMS=CSV
+	OUT=cshoupe.spotify
+	replace;
+	GUESSINGROWS = MAX;
+	GETNAMES=YES;
+Run;
+
+*Here I am creating a regression model to determine if the variables energy and tempo will affect popularity.;
+*The response variable is popularity, while energy and tempo are the predictors.;	
+PROC GLM DATA= cshoupe.spotify PLOTS(MAXPOINTS=500000) = All;
+	MODEL popularity = energy tempo/CLM;
+Run;
+*Looking at the Pr > F value for the model, we cna determine that the model has a significant linear relationship.;
+*Specifically looking at the Pr > F value for each independent variable, we can deduct that tempo is significant when determining the popularity of a song, but energy is not.;
+
+    			
