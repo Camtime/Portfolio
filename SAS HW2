@@ -1,0 +1,68 @@
+*******;
+*Homework 2;
+*Cameron Houpe;
+*02/27/24;
+*******;
+
+*The LIBNAME statemnent creates the permanent library named 'cshoupe'; 
+LIBNAME cshoupe '/home/u63737625/SAS ICAs';
+
+*Below, I am creating a reference to the file and importing it into SAS;
+*While importing, I also include the database management system, the new file name, the replace statement (replaces old data with new data), and stating that the first row of the data is a header row.;
+
+FILENAME BEANS '/home/u63737625/SAS ICAs/cshoupe_beans.xlsx';
+
+PROC IMPORT DATAFILE=BEANS
+	DBMS=XLSX
+	OUT=cshoupe.Beans
+	replace;
+	GETNAMES=YES;
+RUN;
+
+*work.Beans is the copy of the dataset cshoupe.Beans;
+*Drop, drops the variable from the output data;
+*Rename, renames the variables;
+*The IF statement keeps certain rows based on certain string values for the variable Class;
+*averageSF is a new variable created by averaging the ShapeFactors;
+*The LENGTH statement limts the amount of characters in the variable RndLevel;
+*The IF/Else IF/Else statement categorizes the roundness based on certain conditions;
+
+data work.Beans;
+    set cshoupe.Beans (drop = Solidity ConvexArea
+    				rename = (ShapeFactor1 = SF1
+    							ShapeFactor2 = SF2
+    							ShapeFactor3 = SF3
+    							ShapeFactor4 = SF4));
+    				IF (Class = "SIRA") OR (Class = "CALI") OR (Class = "DERMASON") OR (Class = "BOMBAY") OR (Class = "SEKER");
+    				averageSF = MEAN(SF1, SF2, SF3, SF4);
+    				LENGTH RndLevel $20;
+    				If (Roundness > 0.9108305) THEN RndLevel = "Largest Category";
+    				Else IF (Roundness > 0.8777096) AND (Roundness <= 0.9108305) THEN RndLevel = "Middle Category";
+    				Else RndLevel = "Lowest Category";
+
+Run;
+
+*PROC PRINT prints out the work.beans dataset;
+*Where specifies which Roundness categories to print;
+*var specifies which variables to print out;
+
+PROC PRINT DATA = work.beans;
+	Where (RndLevel = "Lowest Category") or (RndLevel = "Middle Category");
+	var Class RndLevel Roundness EquivDiameter Perimeter;  
+	
+RUN;
+
+***************************************;
+
+*The URL is: https://www.gigasheet.com/sample-data/nba-player-stats-dataset-for-the-2022-2023 ;
+*I am interested in this dataset because it inlvolves the NBA, which I am a very big fan of. I also like observing stats on players to make an evaluation of how they are playing.;
+
+FILENAME NbaStats '/home/u63737625/SAS ICAs/NBA Player Stats Dataset for the 2022-2023 _exported.csv';
+
+PROC IMPORT DATAFILE=NbaStats
+	DBMS=CSV
+	OUT=cshoupe.NbaStats
+	replace;
+	GUESSINGROWS = MAX;
+	GETNAMES=YES;
+RUN;
