@@ -1,0 +1,79 @@
+************************************************;
+*Author:  Cameron Houpe;                                                                             ;                                                                            ;
+*Program Purpose: Homework 1;
+*Date:  1/29/24;                                                                                 ;
+************************************************;
+
+*Creates reference to the permanenet library 'cshoupe';
+LIBNAME cshoupe '/home/u63737625/SAS ICAs';
+
+*importing csv file using an URL and then importing the file as a SAS data file, while including the database management system, the library name, the max amount of rows to decide how long a variable is, and info that says the first row is a header row.;
+*PROC SORT sorts the data by the variable 'PAIN';
+*PROC PRINT prints every row in the dataset;
+
+FILENAME hcData URL 'https://www4.stat.ncsu.edu/~online/ST307/Data/cshoupe_horse-colic.csv';
+
+PROC IMPORT DATAFILE=hcData
+	DBMS=CSV
+	OUT=cshoupe.horseColic;
+	GUESSINGROWS = MAX;
+	GETNAMES=YES;
+RUN;
+
+PROC SORT DATA = cshoupe.horsecolic;
+     BY PAIN;
+RUN;
+
+PROC PRINT DATA = cshoupe.horsecolic;
+RUN;
+
+*There is a missing value for the PAIN variable;
+
+*LIBNAME creates a reference to the permanent library "cshoupe";
+*PROC IMPORT imports data from the tsv file and turns it into a SAS data file;
+*DBMS is the Database Management System which is tsv/TAB;
+*Out is the library name;
+*REPLACE replaces or overwrites data if there is an error or mistake made;
+*GUESSINGROWS=MAX tells SAS to look at the max amount of rows to decide how long a variable is;
+*GETNAMES=NO tells SAS that the first row is not a header row;
+
+LIBNAME cshoupe '/home/u63737625/SAS ICAs';
+
+PROC IMPORT DATAFILE= '/home/u63737625/SAS ICAs/cshoupe_glass.tsv'
+	DBMS=TAB
+	OUT=cshoupe.glass
+	replace;
+	GUESSINGROWS = MAX;
+	GETNAMES=NO;
+	
+RUN;
+
+*The SET and DATA statement in the DATA step have the same name, so that the RENAME function overwrites the current data;
+*The RENAME function renames to columns with the 6 variables given;
+
+
+DATA cshoupe.glass;
+	Set cshoupe.glass;
+	Rename VAR1 = K
+		VAR2 =	Ca
+		VAR3 =	Si
+		VAR4 =	Mg
+		VAR5 =	Id
+		VAR6 =	Fe;
+RUN;
+
+*The first value of the variable K is 0.62;
+
+*The first statement is a LIBNAME engine, which reads in raw data for all sheets and creates a permanent library called "zoo";
+*SET statement of the DATA step copies the existing zoo datasheet that is placed in the work library;	
+
+LIBNAME zoo xlsx '/home/u63737625/SAS ICAs/cshoupe_zoo.xlsx';
+
+DATA work.Zoo;
+	SET zoo.sheet1;
+RUN;
+
+*The first value of the catsize variable is 0;
+
+	
+	
