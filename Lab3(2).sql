@@ -24,20 +24,6 @@ group by city.name
 having count(1)>1;
 -- Manchester, Manzillo, Matamoros, Merida, Newcastle;
 
--- 4.	What is the grouping of languages per country, the count of languages, population, and country for all countries with a population greater than 0? Use Group_Concat to find the result.
-select country.name from country,
-	(select group_concat(countrylanguage.language) from countrylanguage, country where countrylanguage.countrycode = country.code group by countrylanguage.countrycode) as languages,
-		(select count(*) from countrylanguage, country where countrylanguage.countrycode = country.code group by countrylanguage.countrycode) as count_of_languages,
-			(select country.population) as CountryPopulation,
-				(select country.name, country.population from country where country.population > 0) as Population_greater_than_zero;
--- Couldn't figure this out
-
--- 5.	What is the 10-country moving average GNP values? Use Windowing to find the result.
-select country.name, gnp, avg(country.gnp)
-over(order by GNP asc rows 9 preceding) as MovingAverages
-from country;
--- the code on the PowerPoint is not working
-
 -- 6.	What is the aggregate city population values per group (e.g., country) for Mexico and Italy, along with a grand total at the end? Include SUM, AVG, COUNT, MIN, and MAX.
 select name, countrycode,
 sum(population) as totalPopulation,
@@ -172,13 +158,5 @@ where country.code = city.countrycode
 group by country.code;
 -- ABW, 1, 4079
 
--- 5.	What is the largest population of any city in each country? Use a subquery in the FROM statement.
 
-select distinct country.code, country.name, CityPopulation.LargestPopulation
-from country, city,
-(select distinct city.countrycode, max(city.population) as LargestPopulation
-from city
-group by city.countrycode) as CityPopulation
-where country.code = city.countrycode;
--- Couldn't figure out how to get every Largest Population
 
