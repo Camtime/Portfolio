@@ -1,0 +1,144 @@
+*******;
+*Homework 3;
+*Cameron Houpe;
+*03/26/24;
+*******;
+
+LIBNAME cshoupe '/home/u63737625/SAS ICAs';
+*The LIBNAME statemnent creates the permanent library named 'cshoupe'; 
+
+FILENAME BEANS '/home/u63737625/SAS ICAs/cshoupe_beans.xlsx';
+
+PROC IMPORT DATAFILE=BEANS
+	DBMS=XLSX
+	OUT=cshoupe.Beans
+	replace;
+	GETNAMES=YES;
+RUN;
+*Below, I am creating a reference to the file and importing it into SAS;
+*While importing, I also include the database management system, the new file name, the replace statement (replaces old data with new data), and stating that the first row of the data is a header row.;
+
+data work.Beans;
+    set cshoupe.Beans (drop = Solidity ConvexArea
+    				rename = (ShapeFactor1 = SF1
+    							ShapeFactor2 = SF2
+    							ShapeFactor3 = SF3
+    							ShapeFactor4 = SF4));
+    				IF (Class = "SIRA") OR (Class = "CALI") OR (Class = "DERMASON") OR (Class = "BOMBAY") OR (Class = "SEKER");
+    				averageSF = MEAN(SF1, SF2, SF3, SF4);
+    				LENGTH RndLevel $20;
+    				If (Roundness > 0.9108305) THEN RndLevel = "Largest Category";
+    				Else IF (Roundness > 0.8777096) AND (Roundness <= 0.9108305) THEN RndLevel = "Middle Category";
+    				Else RndLevel = "Lowest Category";
+
+Run;
+
+*work.Beans is the copy of the dataset cshoupe.Beans;
+*Drop, drops the variable from the output data;
+*Rename, renames the variables;
+*The IF statement keeps certain rows based on certain string values for the variable Class;
+*averageSF is a new variable created by averaging the ShapeFactors;
+*The LENGTH statement limts the amount of characters in the variable RndLevel;
+*The IF/Else IF/Else statement categorizes the roundness based on certain conditions;
+
+proc freq data = work.Beans;
+	tables Class*Roundness/ expected nocol norow; 
+    where (SF1 < .0081);
+run;
+
+*Here is a two way contigency table that shows no column or row percentages;
+
+Proc Sort data= work.Beans;
+	BY Class;
+Run;
+
+
+PROC MEANS DATA= work.Beans MEAN MIN N P95;
+	VAR Area Perimeter;
+	By Class;
+Run;	
+
+*Here i display the mean minumum sample and percentile of the variables Area and Perimeter by the variable Class.;
+
+PROC CORR DATA=work.Beans;
+	Var Area Perimeter MajorAxisLength MinorAxisLength AspectRatio;
+Run;
+
+*Here is a correlation matrix between five variables;
+
+PROC SGPLOT DATA=work.Beans;
+ VBAR Class/Group= Roundness GROUPDISPLAY=Cluster;
+Run;
+
+*Here is a side by side box plot with the variables class and roundness;
+
+PROC SGPLOT DATA=work.Beans;
+	Histogram Eccentricity
+		Datalabel = count;
+	Density Eccentricity/ Type=kernel;
+Run;
+
+*Here is a histogram for the variable Eccentricity with count for the datalabels. A density plot is also included;
+
+PROC SGPLOT DATA=work.Beans;
+	Histogram Eccentricity
+		Datalabel = count;
+	Density Eccentricity/ Type=kernel;
+Run;
+
+*Couldn't figure out the last question;
+
+*********************;
+*Unfornately my variables were in character form and I didn't know how to change it to numeric. I already wrote all the comments and code before I figured it out and didn't have time to change it.;
+
+*The URL is: https://www.gigasheet.com/sample-data/nba-player-stats-dataset-for-the-2022-2023 ;
+*I am interested in this dataset because it inlvolves the NBA, which I am a very big fan of. I also like observing stats on players to make an evaluation of how they are playing.;
+
+*Pos or Positions is a categorical variable, which states what the role/position the player plays in majority of the time;
+*PTS stands for points, which is how many points each player averages;
+*FG% is the average field goal percentage a player makes a game;
+*3P% is the the average three point percentage a player makes a game;
+
+*Are shooting guards better at shooting then any other position?;
+*Which positions average the most points, assists, rebounds, blocks, and steals?;
+
+FILENAME NbaStats '/home/u63737625/SAS ICAs/NBA Player Stats Dataset for the 2022-2023 _exported.csv';
+
+PROC IMPORT DATAFILE=NbaStats
+	DBMS=CSV
+	OUT=cshoupe.NbaStats
+	replace;
+	GUESSINGROWS = MAX;
+	GETNAMES=YES;
+RUN;
+
+PROC PRINT DATA=cshoupe.NbaStats(obs=5);
+RUN;
+
+PROC CONTENTS DATA=cshoupe.NbaStats;
+RUN;
+
+*Here I figured out that my variables were characters and not numeric, so everything after is would work if I could change it to numeric hopefully;
+
+Proc Sort data= cshoupe.NbaStats;
+	BY '3P%'n 'FG%'n;
+Run;
+
+PROC MEANS DATA= cshoupe.NbaStats MEAN;
+	VAR '3P%'n 'FG%'n;
+	CLASS Pos;
+Run;
+
+*I sort and get the means of 3p% and field goal percentage and then class it by posotion;
+
+Proc Sort data= cshoupe.NbaStats;
+	BY PTS TRB AST STL BLK;
+Run;
+
+PROC MEANS DATA= cshoupe.NbaStats MEAN;
+	Class Pos;
+	Var PTS TRB AST STL BLK;
+	
+Run;
+
+*I sort and get the means of points, rebounds, assists, steals, and blocks and then class it by posotion;
